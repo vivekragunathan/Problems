@@ -1,0 +1,13 @@
+# git ignore file
+
+bin/
+obj/
+_Resharper.*/
+
+*.dll
+*.pdb
+*.exe
+*.suo
+*.csproj.user
+*.user
+*.sdf
