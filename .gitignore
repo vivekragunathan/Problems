@@ -2,6 +2,8 @@
 
 bin/
 obj/
+Debug/
+ipch/
 _Resharper.*/
 
 *.dll
@@ -11,4 +13,5 @@ _Resharper.*/
 *.csproj.user
 *.user
 *.sdf
+*.opensdf
 *.vcxproj.filters
