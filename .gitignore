@@ -11,3 +11,4 @@ _Resharper.*/
 *.csproj.user
 *.user
 *.sdf
+*.vcxproj.filters
