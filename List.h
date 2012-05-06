@@ -6,51 +6,93 @@
 using namespace std;
 
 template<typename T>
-class Node {
-private: T item;
-private: Node<T>* next;
-
-public: Node(const T& item) {
-           this->item = item;
-           this->next = nullptr;
-        }
-
-public: Node(const T& item, Node<T>* next) {
-           this->item = item;
-           this->next = next;
-        }
-
-public: T& Item() {
-           return this->item;
-        }
-
-public: Node<T>*& Next() {
-           return this->next;
-        }
-};
-
-template<typename T>
 class LinkedList
 {
-private: Node<T>* root;
-private: Node<T>* end;
-private: Node<T>* prevHead;
+
+public: class Node
+		{
+		private: T item;
+		private: Node* next;
+
+		public: Node(const T& item)
+				{
+					this->item = item;
+					this->next = nullptr;
+				}
+
+		public: Node(const T& item, Node* next)
+				{
+					this->item = item;
+					this->next = next;
+				}
+
+		public: T& Item()
+				{
+					return this->item;
+				}
+
+		public: const T& Item() const
+				{
+					return this->item;
+				}
+
+		public: LinkedList<T>::Node*& Next()
+				{
+					return this->next;
+				}
+		};
+
+private: LinkedList<T>::Node* root;
+private: LinkedList<T>::Node* end;
+private: LinkedList<T>::Node* prevHead;
 
 public: LinkedList()
         {
            root = end = prevHead = nullptr;
         }
 
-public: Node<T>* Append(T item)
+public: ~LinkedList()
+		{
+			// **********************************************************
+			// TODO: Check if cyclic, else will keep deleting nodes!
+			// **********************************************************
+
+			// Delete all nodes
+			auto current = root;
+			while (current != nullptr)
+			{
+				auto temp = current->Next();
+				delete current;
+				current = temp;
+			}
+		}
+
+public: Node* operator[](int index) const
+		{
+			return GetNthNode(index);
+		}
+
+public: LinkedList<T>::Node* GetNthNode(int index) const // index is zero-based.
+		 {
+			auto node = root;
+			while (index >= 0 && node != nullptr)
+			{
+				node = node->Next();
+				--index;
+			}
+
+			return node;
+		 }
+
+public: Node* Append(T item)
         {
-           Node<T>* node = new Node<T>(item);
+           Node* node = new Node(item);
            if (root == nullptr)
            {
               root = end = node;
            }
            else
            {
-              //_ASSERTE(end != nullptr);
               end->Next() = node;
               end = node;
            }
@@ -58,7 +100,7 @@ public: Node<T>* Append(T item)
            return node;
         }
 
-public: Node<T>* Root() const
+public: LinkedList<T>::Node* Root() const
         {
            return this->root;
         }
@@ -67,7 +109,7 @@ public: void Print(std::ostream& ostr = std::cout,
            const std::string& separator = " -> ",
            const std::string& terminator = "\r\n")
         {
-           Node<T>* currentNode = root;
+           Node* currentNode = root;
 
            while (currentNode != nullptr)
            {
@@ -80,12 +122,103 @@ public: void Print(std::ostream& ostr = std::cout,
 
            ostr << terminator.c_str();
         }
+        
+public: bool IsCyclic2() const
+        {
+            int iterCount = 0;
+
+            auto jmpBy1Ptr = root;
+            auto jmpBy2Ptr = root->Next();
+
+            while (jmpBy2Ptr != jmpBy1Ptr && jmpBy2Ptr != nullptr && jmpBy1Ptr != nullptr)
+            {
+               jmpBy1Ptr = jmpBy1Ptr->Next();
+
+               auto temp = jmpBy2Ptr->Next();
+               jmpBy2Ptr = ((temp == nullptr) ? nullptr : temp->Next());
+
+               ++iterCount;
+            }
+
+            cout << "IsCyclic Iteration Count: " << iterCount << std::endl;
+
+            return jmpBy2Ptr == jmpBy1Ptr;
+        }
+
+public: bool IsCyclic() const
+        {   
+            int iterCount = 0;
+
+            auto jmpBy1Ptr = root;
+            auto jmpBy2Ptr = root;
+
+            while (jmpBy1Ptr != nullptr && jmpBy2Ptr != nullptr && jmpBy2Ptr->Next() != nullptr)
+            {
+            	jmpBy1Ptr = jmpBy1Ptr->Next();
+            	jmpBy2Ptr = jmpBy2Ptr->Next()->Next();
+
+            	if (jmpBy1Ptr == jmpBy2Ptr)
+            	{
+            		cout << "Stop node is " << jmpBy1Ptr->Item() << std::endl;
+            		return true;
+            	}
+
+            	++iterCount;
+            }
+
+            return false;
+        }
+
+public: LinkedList<T>::Node* FindCyclicNode() const
+		{
+			int iterCount = 0;
+
+			auto jmpBy1Ptr = root;
+			auto jmpBy2Ptr = root;
+
+			while (jmpBy1Ptr != nullptr && jmpBy2Ptr != nullptr && jmpBy2Ptr->Next() != nullptr)
+			{
+				jmpBy1Ptr = jmpBy1Ptr->Next();
+				jmpBy2Ptr = jmpBy2Ptr->Next()->Next();
+
+				if (jmpBy1Ptr == jmpBy2Ptr)
+				{
+					const int noOfNodesInLoop = CountNoOfNodesInLoop(jmpBy1Ptr);
+
+					cout << "No of nodes in loop: " << noOfNodesInLoop << std::endl;
+
+					auto p1= root;
+					auto p2 = GetNthNode(noOfNodesInLoop - 1); // zero based index
+
+					cout << "Node at index " << noOfNodesInLoop << ": " << p2->Item() << std::endl;
+
+					// Pointers meet at loop starting node
+					while (p1 != p2)
+					{
+						p1 = p1->Next();
+						p2 = p2->Next();
+					}
+
+					p2 = p2->Next();
+					while(p2->Next() != p1)
+					{
+						p2 = p2->Next();
+					}
+
+					return p2;
+				}
+
+				++iterCount;
+			}
+
+			return nullptr;
+		}
 
 public: void Reverse()
         {
-           Node<T>* current = this->root;
-           Node<T>* prev = nullptr;
-           Node<T>* next = nullptr;
+           Node* current = this->root;
+           Node* prev = nullptr;
+           Node* next = nullptr;
 
            while (current != nullptr)
            {
@@ -135,7 +268,7 @@ public: void Reverse(int k)
            prevHead = nullptr;
         }
 
-private: Node<T>* ReverseList(Node<T>* current, Node<T>* next)
+private: Node* ReverseList(Node* current, Node* next)
          {
             if (current == nullptr)
             {
@@ -154,7 +287,7 @@ private: Node<T>* ReverseList(Node<T>* current, Node<T>* next)
             // cout << "Current: " << current->Item() << endl;
             // cout << "Next: " << next->Item() << endl;
 
-            Node<T>* nextNext = next->Next();
+            Node* nextNext = next->Next();
             next->Next() = current;
 
             if (nextNext == nullptr)
@@ -166,13 +299,13 @@ private: Node<T>* ReverseList(Node<T>* current, Node<T>* next)
             return ReverseList(next, nextNext);
          }
 
-private: Node<T>* _Reverse(Node<T>* head, int k)
+private: Node* _Reverse(Node* head, int k)
          {
             int iter = k;
 
-            Node<T>* current = head;
-            Node<T>* prev = nullptr;
-            Node<T>* next = nullptr;
+            Node* current = head;
+            Node* prev = nullptr;
+            Node* next = nullptr;
 
             while (current != nullptr && iter >= 1)
             {
@@ -199,4 +332,19 @@ private: Node<T>* _Reverse(Node<T>* head, int k)
 
             return prev;
          }
+
+private: int CountNoOfNodesInLoop(LinkedList<T>::Node* stopNode) const
+		 {
+			int count = 1;
+			auto p1 = stopNode;
+			auto p2 = stopNode;
+
+			while (p1->Next() != p2)
+			{
+				p1 = p1->Next();
+				++count;
+			}
+
+			return count;
+		 }
 };
