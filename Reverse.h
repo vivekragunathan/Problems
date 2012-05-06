@@ -38,10 +38,10 @@ void TestListCyclic()
 		lastNode = ll.Append(index);
 	}
 
-	auto cycledNode = ll.Root()->Next()->Next()->Next();
+	/*auto cycledNode = ll.Root()->Next()->Next()->Next();
 	cout << "Cycled Node: " << cycledNode->Item() << std::endl;
 
-	lastNode->Next() = cycledNode;
+	lastNode->Next() = cycledNode;*/
 
 	cout << "IsCyclic: " << ll.IsCyclic() << std::endl;
 
