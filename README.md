@@ -1,4 +1,0 @@
-Problems
-========
-
-Problems and Solutions
